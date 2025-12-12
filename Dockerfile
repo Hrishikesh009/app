@@ -2,7 +2,7 @@ FROM node:18-alpine AS builder
 
 WORKDIR /usr/src/app
 COPY app/package.json ./
-RUN npm ci --production
+RUN npm install --production
 COPY app/ ./
 
 FROM node:18-alpine
