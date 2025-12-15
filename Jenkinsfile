@@ -20,8 +20,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    docker build -t '"${IMAGE}:${BUILD_NUMBER}"' .
-                    docker tag '"${IMAGE}:${BUILD_NUMBER}"' '"${IMAGE}:latest"'
+                    docker build -t ${IMAGE}:${BUILD_NUMBER} .
+                    docker tag ${IMAGE}:${BUILD_NUMBER} ${IMAGE}:latest
                 '''
             }
         }
@@ -37,8 +37,8 @@ pipeline {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push '"${IMAGE}:${BUILD_NUMBER}"'
-                        docker push '"${IMAGE}:latest"'
+                        docker push ${IMAGE}:${BUILD_NUMBER}
+                        docker push ${IMAGE}:latest
                     '''
                 }
             }
@@ -47,8 +47,8 @@ pipeline {
         stage('Deploy on Same VM') {
             steps {
                 sh '''
-                    mkdir -p '"${DEPLOY_DIR}"'
-                    cd '"${DEPLOY_DIR}"'
+                    mkdir -p ${DEPLOY_DIR}
+                    cd ${DEPLOY_DIR}
 
                     cat > docker-compose.yml <<EOF
 version: "3.9"
@@ -69,7 +69,7 @@ services:
         max-file: "3"
 EOF
 
-                    docker pull '"${IMAGE}:latest"'
+                    docker pull ${IMAGE}:latest
                     docker compose down || true
                     docker compose up -d
                 '''
