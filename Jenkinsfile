@@ -6,7 +6,7 @@ pipeline {
         DOCKER_REPO    = 'app'
         IMAGE          = "${DOCKER_USER}/${DOCKER_REPO}"
         DOCKERHUB_CRED = 'dockerhub-creds'
-        DEPLOY_DIR     = '/home/ubuntu/app-deploy'
+        DEPLOY_DIR     = '/var/lib/jenkins/app-deploy'
     }
 
     stages {
@@ -86,3 +86,4 @@ EOF
         }
     }
 }
+
