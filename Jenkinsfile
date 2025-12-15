@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = 'hrishi001'
-        DOCKER_REPO = 'app'
-        IMAGE = "${DOCKER_USER}/${DOCKER_REPO}"
+        DOCKER_USER    = 'hrishi001'
+        DOCKER_REPO    = 'app'
+        IMAGE          = "${DOCKER_USER}/${DOCKER_REPO}"
         DOCKERHUB_CRED = 'dockerhub-creds'
-        DEPLOY_DIR = '/home/ubuntu/app-deploy'
+        DEPLOY_DIR     = '/home/ubuntu/app-deploy'
     }
 
     stages {
-      
+
         stage('Checkout Code') {
             steps {
                 checkout scm
@@ -19,37 +19,37 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh """
-                    docker build -t ${IMAGE}:${BUILD_NUMBER} .
-                    docker tag ${IMAGE}:${BUILD_NUMBER} ${IMAGE}:latest
-                """
+                sh '''
+                    docker build -t '"${IMAGE}:${BUILD_NUMBER}"' .
+                    docker tag '"${IMAGE}:${BUILD_NUMBER}"' '"${IMAGE}:latest"'
+                '''
             }
         }
 
         stage('Login & Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: DOCKERHUB_CRED,
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh """
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: DOCKERHUB_CRED,
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE}:${BUILD_NUMBER}
-                        docker push ${IMAGE}:latest
-                    """
+                        docker push '"${IMAGE}:${BUILD_NUMBER}"'
+                        docker push '"${IMAGE}:latest"'
+                    '''
                 }
             }
         }
 
-        stage('Deploy Locally on Same VM') {
+        stage('Deploy on Same VM') {
             steps {
-                sh """
-                    # Create deploy directory if missing
-                    mkdir -p ${DEPLOY_DIR}
-                    cd ${DEPLOY_DIR}
+                sh '''
+                    mkdir -p '"${DEPLOY_DIR}"'
+                    cd '"${DEPLOY_DIR}"'
 
-                    # Write fresh docker-compose.yml
                     cat > docker-compose.yml <<EOF
 version: "3.9"
 services:
@@ -69,25 +69,20 @@ services:
         max-file: "3"
 EOF
 
-                    # Pull latest image
-                    docker pull ${IMAGE}:latest
-
-                    # Restart container
+                    docker pull '"${IMAGE}:latest"'
                     docker compose down || true
                     docker compose up -d
-                """
+                '''
             }
         }
     }
 
     post {
         success {
-            echo "🎉 Deployment SUCCESSFUL!"
+            echo '✅ Deployment Successful'
         }
         failure {
-            echo "❌ Deployment FAILED!"
+            echo '❌ Deployment Failed'
         }
     }
 }
-
-
